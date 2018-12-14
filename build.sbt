@@ -10,6 +10,7 @@ lazy val root = (project in file(".")).
     name := "Hello",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % "2.6.10",
+      "org.scalaj" %% "scalaj-http" % "2.4.1",
       scalaTest % Test
     )
   )

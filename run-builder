@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ ! "$(docker ps -q -f 'name=graal-builder')" ]; then
+  echo "Start GraalVM build server..."
+  docker run --name graal-builder -dt graal-build-img:latest
+else
+  echo "Server is running"
+fi
