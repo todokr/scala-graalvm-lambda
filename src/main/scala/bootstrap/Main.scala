@@ -5,16 +5,12 @@ import scalaj.http._
 
 object Main {
 
-  implicit val requestReads = Json.reads[Request]
+  implicit val requestReads: Reads[Request] = Json.reads[Request]
 
   def main(args: Array[String]): Unit = {
-    val handler  = System.getenv("_HANDLER")
-    val taskRoot = System.getenv("LAMBDA_TASK_ROOT")
     val runtime  = System.getenv("AWS_LAMBDA_RUNTIME_API")
 
     try {
-      println(s"handler: $handler")
-      println(s"taskRoot: $taskRoot")
       println(s"runtime: $runtime")
     } catch {
       case e: Exception =>
@@ -22,25 +18,17 @@ object Main {
         Http(s"http://$runtime/2018-06-01/runtime/init/error").postData(message).asString
     }
 
-    val HttpResponse(jsResult, _, headers) =
-      Http(s"http://$runtime/2018-06-01/runtime/invocation/next").execute(x => Json.parse(x).validate[Request])
-
-    val requestId = headers.get("lambda-runtime-aws-request-id")
-    val traceId = headers.get("lambda-runtime-trace-id")
-
-    println(s"body: $jsResult")
-    println(s"headers: $headers")
-
     while (true) {
+      val HttpResponse(body, _, headers) =
+        Http(s"http://$runtime/2018-06-01/runtime/invocation/next").asString
+      val requestId = headers("lambda-runtime-aws-request-id").head
+
       try {
-        val result = Json.obj(
-          "headers" -> ("content-type" -> "text"),
-          "isBase64Encoded" -> false,
-          "statusCode" -> 200,
-          "body" -> s"Hello, ${jsResult.get.name}!"
-        ).toString
-        println(s"result: $result")
-        Http(s"http://$runtime/2018-06-01/runtime/invocation/$requestId/response").postData(result).asString
+        val request = Json.parse(body).validate[Request].get
+        val message = handleRequest(request)
+        val responseJson = Json.obj("message" -> message).toString
+
+        Http(s"http://$runtime/2018-06-01/runtime/invocation/$requestId/response").postData(responseJson).asString
       } catch {
         case e: Exception =>
           println(e.getClass.getName)
@@ -50,6 +38,8 @@ object Main {
       }
     }
   }
+
+  private def handleRequest(request: Request): String = s"Hello, ${request.name}!"
 }
 
 case class Request(name: String)
