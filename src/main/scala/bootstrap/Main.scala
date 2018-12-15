@@ -5,8 +5,6 @@ import scalaj.http._
 
 object Main {
 
-  implicit val requestReads: Reads[Request] = Json.reads[Request]
-
   def main(args: Array[String]): Unit = {
     val runtime  = System.getenv("AWS_LAMBDA_RUNTIME_API")
 
@@ -24,9 +22,8 @@ object Main {
       val requestId = headers("lambda-runtime-aws-request-id").head
 
       try {
-        val request = Json.parse(body).validate[Request].get
-        val message = handleRequest(request)
-        val responseJson = Json.obj("message" -> message).toString
+        val name = (Json.parse(body) \ "name").get
+        val responseJson = Json.obj("message" -> s"Hello, $name!").toString
 
         Http(s"http://$runtime/2018-06-01/runtime/invocation/$requestId/response").postData(responseJson).asString
       } catch {
@@ -38,8 +35,4 @@ object Main {
       }
     }
   }
-
-  private def handleRequest(request: Request): String = s"Hello, ${request.name}!"
 }
-
-case class Request(name: String)
