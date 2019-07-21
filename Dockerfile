@@ -1,4 +1,4 @@
-FROM oracle/graalvm-ce:1.0.0-rc10
+FROM oracle/graalvm-ce:1.0.0-rc15
 RUN yum  install -y java-1.8.0-openjdk-headless \
     && update-alternatives --set java $JAVA_HOME/bin/java \
         && mv $JAVA_HOME/jre/lib/security/cacerts $JAVA_HOME/jre/lib/security/cacerts.bak \
