@@ -44,7 +44,7 @@ lazy val root = (project in file(".")).
       (s"docker cp target/scala-2.12/$jarName graal-builder:server.jar" #&&
        "time docker exec graal-builder native-image -H:+ReportUnsupportedElementsAtRuntime -H:EnableURLProtocols=http,https -J-Xmx3G -J-Xms3G --no-server -jar server.jar" #&&
        "docker cp graal-builder:server target/bootstrap" #&&
-       "docker cp graal-builder:/opt/graalvm-ce-1.0.0-rc10/jre/lib/amd64/libsunec.so target/libsunec.so" #&&
+       "docker cp graal-builder:/opt/graalvm-ce-1.0.0-rc15/jre/lib/amd64/libsunec.so target/libsunec.so" #&&
        "zip -j target/bundle.zip target/bootstrap target/libsunec.so").!
     }
   )
